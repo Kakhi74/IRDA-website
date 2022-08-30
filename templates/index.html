@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Karim Khiari">
+    <meta name="description" content="Simplistic website to upload excel data files to automate calculation and generate graphs for a scientific research project.">
+    <title>IRDA-File-DropZone</title>
+</head>
+
+<body>
+    <h1>Bienvenue sur la page web de Dr.Khiari, veuillez déposer vos fichier concernant l'IRDA selon le format approprier.</h1>
+    <p>Inserer le fichier de poids ici selon ce format ---> "Poids [directory].xlsx"</p>
+    <p>Example ---> Poids HNO3_HCL.xlsx</p>
+    <form action="uploadfiles" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <p>Inserer le fichier des résultats de l'IRDA ici selon ce format ---> "Résultats_IRDA [directory].xlsx"</p>
+    <p>Example ---> Résultats_IRDA HNO3_HCL.xlsx</p>
+    <form action="uploadfiles" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <p>Aussurez vous que vos fichier de poids correspondent aux fichier de résultats IRDA et que ceux-ci ont été soumis avec le nom de fichier approprier</p>
+    <input type="submit">
+    </form>
+</body>
+
+</html>

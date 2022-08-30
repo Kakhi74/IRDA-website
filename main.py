@@ -1,19 +1,21 @@
 import shutil
 from typing import List
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 import os
+from concat_files import join_files
+from calculation import calcul_mehlich3, calcul_HNO3_HCL, calcul_H2SO4_SeO3
+from data_organisation import organisation
+
 
 app = FastAPI()
 
-
-def initializing_dir(dirname):
-    pass
-
+templates = Jinja2Templates(directory="templates")
 
 
 @app.post("/uploadfiles")
-async def root(files: List[UploadFile] = File(description="Multiple files as UploadFile")):
+async def uploadfiles(request: Request, files: List[UploadFile] = File(description="Multiple files as UploadFile")):
     file_Poids = ''
     file_Resultat_IRDA = ''
     file1 = files[0].filename.split()
@@ -47,25 +49,36 @@ async def root(files: List[UploadFile] = File(description="Multiple files as Upl
                 file_Poids = xlsx.filename
             if xlsx.filename[0] == 'R':
                 file_Resultat_IRDA = xlsx.filename
-            
+
+        # Working on poids and results table in pandas
+        df_merge = join_files(file_poids=file_Poids, file_resultat_IRDA=file_Resultat_IRDA)
+
+        # Calculations on pandas dataframes
+        if file_dir == 'Mehlich3':
+            df_calc = calcul_mehlich3(df_merge)
+            organisation(df_calc)
+        if file_dir == 'HNO3_HCl':
+            df_calc = calcul_HNO3_HCL(df_merge)
+            organisation(df_calc)
+        if file_dir == 'H2SO4_SeO3':
+            df_calc = calcul_H2SO4_SeO3(df_merge)
+            organisation(df_calc)
 
         os.chdir(absolute_path)
+
+        ###################################
+        #os.chdir('quality_control_chart')
+        #os.chdir(file_dir)
+        #first_path = os.getcwd()
+        #dataframes = []
+        #for x in range(dir_num + 1):
+            #os.chdir(str(x))
         return {"file_status": 'Files uploaded successfully !'}
     else:
         return {"file_status": "ERROR, please try again with the proper filename format"}
 
 
-@app.get("/")
-async def main():
-    content = """
-<body>
-Please insert "Poids [directory].xlsx"    &    "Résultats_IRDA [directory].xlsx"
-<form action="/uploadfiles/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<form action="/uploadfiles/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-</form>
-</body>
-    """
-    return HTMLResponse(content=content)
+
+@app.get("/", response_class=HTMLResponse)
+async def main(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
